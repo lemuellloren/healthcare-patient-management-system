@@ -1,9 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 'use client';
 
 import {
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -11,12 +9,21 @@ import {
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Control } from 'react-hook-form';
-import { FormFieldType } from './forms/PatientForm';
-import { string } from 'zod';
+
 import Image from 'next/image';
 import 'react-phone-number-input/style.css';
 import PhoneInput from 'react-phone-number-input/input';
 import { E164Number } from 'libphonenumber-js';
+
+export enum FormFieldType {
+  INPUT = 'input',
+  TEXTAREA = 'textarea',
+  PHONE_INPUT = 'phoneInput',
+  CHECKBOX = 'checkbox',
+  DATE_PICKER = 'datePicker',
+  SELECT = 'select',
+  SKELETON = 'skeleton',
+}
 
 interface CustomProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -31,6 +38,7 @@ interface CustomProps {
   dateFormat?: string;
   showTimeSelect?: boolean;
   children?: React.ReactNode;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   renderSkeleton?: (field: any) => React.ReactNode;
 }
 
