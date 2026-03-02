@@ -11,8 +11,8 @@ import { createUser } from '@/lib/actions/patient.actions';
 import { UserFormValidation } from '@/lib/validation';
 
 import 'react-phone-number-input/style.css';
-import SubmitButton from '../SubmitButton';
 import CustomFormField, { FormFieldType } from '../CustomFormField';
+import SubmitButton from '../SubmitButton';
 
 export const PatientForm = () => {
   const router = useRouter();
