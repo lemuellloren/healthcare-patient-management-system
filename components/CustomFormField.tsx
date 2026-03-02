@@ -12,8 +12,11 @@ import { Control } from 'react-hook-form';
 
 import Image from 'next/image';
 import 'react-phone-number-input/style.css';
-import PhoneInput from 'react-phone-number-input/input';
+import PhoneInput from 'react-phone-number-input';
 import { E164Number } from 'libphonenumber-js';
+import DatePicker from 'react-datepicker';
+
+import 'react-datepicker/dist/react-datepicker.css';
 
 export enum FormFieldType {
   INPUT = 'input',
@@ -68,6 +71,25 @@ const RenderField = ({ field, props }: { field: any; props: CustomProps }) => {
         </div>
       );
     case FormFieldType.PHONE_INPUT:
+    case FormFieldType.DATE_PICKER:
+      return (
+        <div className='flex rounded-md border border-dark-500 bg-dark-400'>
+          <Image
+            src='/assets/icons/calendar.svg'
+            height={24}
+            width={24}
+            alt='user'
+            className='ml-2'
+          />
+          <FormControl>
+            <DatePicker
+              selected={field.value}
+              onChange={(date) => field.onChange(date)}
+              showTimeSelect={props.showTimeSelect}
+            />
+          </FormControl>
+        </div>
+      );
       return (
         <FormControl>
           <PhoneInput
