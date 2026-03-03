@@ -1,7 +1,6 @@
 'use server';
 
-import { ID, Query } from 'node-appwrite';
-import { InputFile } from 'node-appwrite/file';
+import { ID, InputFile, Query } from 'node-appwrite';
 
 import {
   BUCKET_ID,
@@ -18,7 +17,8 @@ import { parseStringify } from '../utils';
 // CREATE APPWRITE USER
 export const createUser = async (user: CreateUserParams) => {
   try {
-    const newUser = await users.create(
+    // Create new user -> https://appwrite.io/docs/references/1.5.x/server-nodejs/users#create
+    const newuser = await users.create(
       ID.unique(),
       user.email,
       user.phone,
@@ -26,17 +26,17 @@ export const createUser = async (user: CreateUserParams) => {
       user.name,
     );
 
-    return parseStringify(newUser);
+    return parseStringify(newuser);
   } catch (error: any) {
-    // Handle existing user
-    if (error?.code === 409) {
+    // Check existing user
+    if (error && error?.code === 409) {
       const existingUser = await users.list([
         Query.equal('email', [user.email]),
       ]);
-      return existingUser.users[0] || null;
+
+      return existingUser.users[0];
     }
     console.error('An error occurred while creating a new user:', error);
-    return null;
   }
 };
 
@@ -44,13 +44,13 @@ export const createUser = async (user: CreateUserParams) => {
 export const getUser = async (userId: string) => {
   try {
     const user = await users.get(userId);
+
     return parseStringify(user);
   } catch (error) {
     console.error(
       'An error occurred while retrieving the user details:',
       error,
     );
-    return null;
   }
 };
 
@@ -60,29 +60,28 @@ export const registerPatient = async ({
   ...patient
 }: RegisterUserParams) => {
   try {
-    let file = null;
-
+    // Upload file ->  // https://appwrite.io/docs/references/cloud/client-web/storage#createFile
+    let file;
     if (identificationDocument) {
-      const blob = identificationDocument.get('blobFile') as Blob;
-      const fileName = identificationDocument.get('fileName') as string;
-
-      // Convert Blob to Uint8Array
-      const arrayBuffer = await blob.arrayBuffer();
-      const uint8Array = new Uint8Array(arrayBuffer);
-
-      const inputFile = InputFile.fromBuffer(uint8Array, fileName);
+      const inputFile =
+        identificationDocument &&
+        InputFile.fromBlob(
+          identificationDocument?.get('blobFile') as Blob,
+          identificationDocument?.get('fileName') as string,
+        );
 
       file = await storage.createFile(BUCKET_ID!, ID.unique(), inputFile);
     }
 
+    // Create new patient document -> https://appwrite.io/docs/references/cloud/server-nodejs/databases#createDocument
     const newPatient = await databases.createDocument(
       DATABASE_ID!,
       PATIENT_COLLECTION_ID!,
       ID.unique(),
       {
-        identificationDocumentId: file?.$id || null,
+        identificationDocumentId: file?.$id ? file.$id : null,
         identificationDocumentUrl: file?.$id
-          ? `${ENDPOINT}/storage/buckets/${BUCKET_ID}/files/${file.$id}/view?project=${PROJECT_ID}`
+          ? `${ENDPOINT}/storage/buckets/${BUCKET_ID}/files/${file.$id}/view??project=${PROJECT_ID}`
           : null,
         ...patient,
       },
@@ -91,7 +90,6 @@ export const registerPatient = async ({
     return parseStringify(newPatient);
   } catch (error) {
     console.error('An error occurred while creating a new patient:', error);
-    return null;
   }
 };
 
@@ -104,14 +102,11 @@ export const getPatient = async (userId: string) => {
       [Query.equal('userId', [userId])],
     );
 
-    if (!patients.documents.length) return null;
-
     return parseStringify(patients.documents[0]);
   } catch (error) {
     console.error(
       'An error occurred while retrieving the patient details:',
       error,
     );
-    return null;
   }
 };
